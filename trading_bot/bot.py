@@ -80,6 +80,12 @@ class BinanceTrendGrid:
         self.current_mdd = 0.0
 
         print(f"Bot initialized for {self.symbol} (Dry Run: {self.dry_run})")
+        
+        # Sync balance immediately if live mode
+        if not self.dry_run:
+            self.update_balance()
+            self.initial_balance = self.balance_usdt
+            self.max_equity = self.balance_usdt
 
     def update_balance(self):
         """Fetch real balance if not dry_run, otherwise return current simulated balance"""
@@ -334,7 +340,11 @@ class BinanceTrendGrid:
                     time.sleep(60)
                     continue
 
-                # 2. Calculate Indicators
+                # 2. Sync balance from exchange (early, before any logic)
+                if not self.dry_run:
+                    self.update_balance()
+
+                # 3. Calculate Indicators
                 df = self.calculate_indicators(df)
                 latest_row = df.iloc[-1]
                 
@@ -355,11 +365,7 @@ class BinanceTrendGrid:
                     'adx': latest_row['adx'], 'atr_ma': latest_row['atr_ma']
                 }
 
-                # 3. Strategy Execution Logic
-                # Sync balance before execution if live
-                if not self.dry_run:
-                    self.update_balance()
-
+                # 5. Strategy Execution Logic
                 if trend != self.current_trend:
                     self.deploy_grid(current_price, trend, inds, timestamp=current_time)
 
@@ -369,9 +375,8 @@ class BinanceTrendGrid:
                 equity = self.get_total_equity(current_price)
                 logging.info(f"Ping | Price: {current_price} | Equity: {equity:.2f} | Trend: {trend} | Pos: {self.position_amount}")
                 
-                # Wait for next minute
-                # Sleep 60 seconds (simple loop)
-                time.sleep(60)
+                # Wait for next update (1 second interval for real-time status)
+                time.sleep(1)
 
             except Exception as e:
                 logging.error(f"Loop Error: {e}")
