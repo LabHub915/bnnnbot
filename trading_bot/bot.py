@@ -81,6 +81,28 @@ class BinanceTrendGrid:
 
         print(f"Bot initialized for {self.symbol} (Dry Run: {self.dry_run})")
 
+    def update_balance(self):
+        """Fetch real balance if not dry_run, otherwise return current simulated balance"""
+        if self.dry_run:
+            return self.balance_usdt
+
+        try:
+            # For futures, we typically check the USDT balance
+            balance = self.exchange.fetch_balance()
+            # Try to get free USDT (available for order) or total
+            # self.balance_usdt should act as "available collateral" or "free cash" to match simulation logic
+            # where balance decreases when margin is used.
+            if 'USDT' in balance:
+                self.balance_usdt = float(balance['USDT']['free'])
+                
+                # Update position amount from exchange if needed (optional but good for sync)
+                # But for now we just sync balance to ensure we have money to trade
+                logging.info(f"Refreshed Available Balance: {self.balance_usdt:.2f} USDT")
+            return self.balance_usdt
+        except Exception as e:
+            logging.error(f"Error fetching balance: {e}")
+            return self.balance_usdt
+
     def get_total_equity(self, current_price):
         unrealized = 0
         if abs(self.position_amount) > 1e-9:
@@ -334,6 +356,10 @@ class BinanceTrendGrid:
                 }
 
                 # 3. Strategy Execution Logic
+                # Sync balance before execution if live
+                if not self.dry_run:
+                    self.update_balance()
+
                 if trend != self.current_trend:
                     self.deploy_grid(current_price, trend, inds, timestamp=current_time)
 
