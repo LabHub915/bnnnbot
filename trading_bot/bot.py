@@ -33,7 +33,7 @@ class BinanceTrendGrid:
             'secret': api_secret if api_secret != "NONE" else '',
             'enableRateLimit': True,
             'timeout': 10000,
-            'options': {'defaultType': 'spot'}
+            'options': {'defaultType': 'future'}
         }
         self.exchange = ccxt.binance(exchange_config)
 
