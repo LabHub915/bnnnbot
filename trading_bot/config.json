@@ -1,0 +1,16 @@
+{
+    "api_key": "YOUR_BINANCE_API_KEY",
+    "api_secret": "YOUR_BINANCE_API_SECRET",
+    "symbol": "BTC/USDT",
+    "settings": {
+        "leverage": 8,
+        "grid_count": 5,
+        "ma_period": 50,
+        "ma_slow_period": 250,
+        "tp_percent": 0.015,
+        "order_size_ratio": 0.02,
+        "account_sl_percent": 0.20,
+        "atr_multiplier": 1.0
+    },
+    "dry_run": true
+}

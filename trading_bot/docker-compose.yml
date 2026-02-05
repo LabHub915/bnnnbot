@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  trading-bot:
+    build: .
+    container_name: binance_bot
+    restart: unless-stopped
+    volumes:
+      - ./config.json:/app/config.json
+    environment:
+      - PYTHONUNBUFFERED=1
+    # User can uncomment this if they want to override timezone
+    # environment:
+    #   - TZ=Asia/Taipei
